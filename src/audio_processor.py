@@ -55,7 +55,7 @@ def transcribe_single_file(args: Tuple[Path, Path]) -> Tuple[bool, str, Path]:
         transcription = result["text"]
 
         # Save to txt file
-        txt_filename = audio_file.stem + "_transcription.txt"
+        txt_filename = audio_file.stem + ".txt"
         txt_output_path = output_folder / txt_filename
 
         with open(txt_output_path, "w", encoding="utf-8") as f:
