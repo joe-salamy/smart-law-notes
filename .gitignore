@@ -38,11 +38,6 @@ wheels/
 *.swo
 *~
 
-# Output files
-new-outputs-safe-delete/
-*.md
-*.txt
-
 # OS
 .DS_Store
 Thumbs.db

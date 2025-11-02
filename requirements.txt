@@ -1,0 +1,4 @@
+whisper
+google-generativeai==0.8.3
+python-dotenv==1.0.1
+pathlib==1.0.1
