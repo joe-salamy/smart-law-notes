@@ -3,7 +3,8 @@ torch
 torchvision
 torchaudio
 noisereduce
-pydub
+soundfile
+librosa
 scipy
 tqdm
 google-generativeai==0.8.3

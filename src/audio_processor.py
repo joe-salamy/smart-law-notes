@@ -9,17 +9,22 @@ import tempfile
 from pathlib import Path
 from typing import List, Tuple
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from dotenv import load_dotenv
 
 import numpy as np
 import noisereduce as nr
+import soundfile as sf
+import librosa
 from faster_whisper import WhisperModel
-from pydub import AudioSegment
 from scipy import signal
 from tqdm import tqdm
 
 import config
 from folder_manager import get_class_paths, get_audio_files
 from file_mover import move_audio_to_processed
+
+# Load environment variables
+load_dotenv()
 
 
 # Module-level cache for the worker process
@@ -37,6 +42,11 @@ def _worker_init(model_name: str, device: str, compute_type: str, cpu_threads: i
     """
     global _WORKER_MODEL
     try:
+        # Set HuggingFace token for authenticated downloads
+        hf_token = os.getenv("HF_TOKEN")
+        if hf_token:
+            os.environ["HF_TOKEN"] = hf_token
+
         _WORKER_MODEL = WhisperModel(
             model_name,
             device=device,
@@ -64,14 +74,10 @@ def preprocess_audio(audio_file: Path) -> Tuple[np.ndarray, int]:
     Returns:
         Tuple of (audio_array, sample_rate)
     """
-    # Step 1: Convert M4A to WAV (16kHz, mono)
-    audio = AudioSegment.from_file(str(audio_file), format="m4a")
-    audio = audio.set_frame_rate(16000).set_channels(1)
+    # Step 1: Load audio file and convert to mono at 16kHz
+    samples, sample_rate = librosa.load(str(audio_file), sr=16000, mono=True)
 
-    # Convert to numpy array
-    samples = np.array(audio.get_array_of_samples(), dtype=np.float32)
-    samples = samples / (2**15)  # Normalize to [-1, 1]
-    sample_rate = audio.frame_rate
+    # samples are already in float32 format normalized to [-1, 1]
 
     # Step 2: Apply noise reduction
     # Uses stationary noise reduction algorithm
@@ -137,15 +143,8 @@ def transcribe_single_file(args: Tuple[Path, Path]) -> Tuple[bool, str, Path]:
         temp_wav = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
         temp_wav.close()
 
-        # Convert numpy array back to AudioSegment for saving
-        audio_data_int16 = (audio_data * 2**15).astype(np.int16)
-        preprocessed_audio = AudioSegment(
-            audio_data_int16.tobytes(),
-            frame_rate=sample_rate,
-            sample_width=2,
-            channels=1,
-        )
-        preprocessed_audio.export(temp_wav.name, format="wav")
+        # Save audio data using soundfile
+        sf.write(temp_wav.name, audio_data, sample_rate)
 
         # Step 2: Transcribe with timestamps
         segments, info = _WORKER_MODEL.transcribe(

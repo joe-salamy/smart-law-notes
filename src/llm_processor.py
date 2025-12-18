@@ -66,15 +66,10 @@ def process_with_gemini(
     Returns:
         Generated text or None if error
     """
-    generation_config = genai.types.GenerationConfig(
-        max_output_tokens=config.MAX_OUTPUT_TOKENS
-    )
 
     for attempt in range(1, max_retries + 1):
         try:
-            response = model.generate_content(
-                content, generation_config=generation_config
-            )
+            response = model.generate_content(content)
             return response.text
         except Exception as e:
             # Simple exponential backoff for transient failures

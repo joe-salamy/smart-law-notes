@@ -23,7 +23,6 @@ WHISPER_MODEL = "tiny"
 
 # Gemini model configuration
 GEMINI_MODEL = "gemini-2.5-pro"
-MAX_OUTPUT_TOKENS = 9000
 
 # Number of parallel processes/threads
 MAX_AUDIO_WORKERS = 3  # Multiprocessing for CPU-intensive transcription

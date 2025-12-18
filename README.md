@@ -1,18 +1,45 @@
 # Law School Note Generator
 
-Automated system for generating lecture and reading notes from audio files and text documents using Whisper and Gemini AI.
+Automated system for generating lecture and reading notes from audio files and text documents using faster-whisper and Gemini AI.
+
+## Quick Start
+
+1. Install Python 3.8+ and FFmpeg
+2. Run: `pip install -r requirements.txt`
+3. Create `.env` with your Gemini API key
+4. Configure class paths in `src/config.py`
+5. Create prompt files in `prompts/`
+6. Place M4A files in `lecture-input/` folders
+7. Run: `cd src && python main.py`
 
 ## Features
 
-- **Audio Transcription**: Converts M4A lecture recordings to text using faster-whisper (large-v3 model) with timestamps
-  - CPU-optimized with int8 quantization for fast processing
-  - Audio preprocessing: noise reduction, bandpass filtering, normalization
-  - Segment-level timestamps in [HH:MM:SS] format for easy navigation
-  - Progress bars showing real-time transcription status
-- **AI Note Generation**: Creates structured notes from transcripts and readings using Google Gemini
-- **Parallel Processing**: Uses multiprocessing for transcription and multithreading for API calls
-- **Multi-Class Support**: Processes multiple law school classes simultaneously
-- **Organized Output**: Maintains clean folder structure with automatic file management
+### Audio Transcription
+
+- **faster-whisper** with large-v3 model for highest accuracy
+- **CPU-optimized**: int8 quantization, 4 threads for AMD Ryzen 7 processors
+- **Audio preprocessing pipeline**:
+  - Automatic M4A to WAV conversion (16kHz, mono)
+  - Noise reduction to remove background sounds
+  - Bandpass filtering (80Hz-8000Hz) to focus on human speech
+  - Audio normalization to -20dB LUFS for consistent volume
+- **Segment-level timestamps** in [HH:MM:SS] format for easy navigation
+- **Real-time progress bars** showing transcription status
+- **Performance**: 3-4x real-time speed (1 hour lecture = 15-20 minutes)
+
+### AI Note Generation
+
+- **Google Gemini** for structured note creation
+- **Parallel processing** with multithreading for fast API calls
+- **Custom prompts** for lectures and readings
+- **Multi-class support** processes all classes simultaneously
+
+### File Management
+
+- **Automatic folder structure** creation and verification
+- **Organized output** with separate folders for each class
+- **Backup system** with consolidated outputs in `new-outputs-safe-delete/`
+- **Smart file moving** preserves originals in processed folders
 
 ## Project Structure
 
@@ -22,56 +49,62 @@ Automated system for generating lecture and reading notes from audio files and t
 │   ├── main.py                 # Central orchestrator
 │   ├── config.py               # Configuration settings
 │   ├── folder_manager.py       # Folder structure management
-│   ├── audio_processor.py      # Audio transcription with Whisper
+│   ├── audio_processor.py      # Audio transcription with faster-whisper
 │   ├── llm_processor.py        # LLM processing with Gemini
 │   └── file_mover.py           # File management utilities
 ├── prompts/
-│   ├── reading.md              # Reading notes prompt
-│   └── lecture.md              # Lecture notes prompt
-├── new-outputs-safe-delete/    # Consolidated output location
-├── tests/
-│   └── __init__.py
-├── .env                        # API keys (not in git)
-├── .gitignore
-├── requirements.txt
-└── README.md
+│   ├── reading.md              # Reading notes prompt template
+│   └── lecture.md              # Lecture notes prompt template
+├── new-outputs-safe-delete/    # Consolidated backup of all outputs
+├── requirements.txt            # Python dependencies
+├── .env                        # API keys (create this, not in git)
+└── README.md                   # This file
 ```
 
 ## Class Folder Structure
 
-Each class should have the following structure:
+Each class requires this structure (created automatically):
 
 ```
 Class Name/
 └── LLM/
     ├── lecture-input/          # Place M4A audio files here
-    ├── lecture-output/         # Generated lecture notes
+    ├── lecture-output/         # Generated lecture notes appear here
     ├── lecture-processed/
-    │   ├── audio/              # Processed audio files
-    │   └── txt/                # Processed transcripts
+    │   ├── audio/              # Processed M4A files moved here
+    │   └── txt/                # Timestamped transcripts moved here
     ├── reading-input/          # Place reading TXT files here
-    ├── reading-output/         # Generated reading notes
-    └── reading-processed/      # Processed reading files
+    ├── reading-output/         # Generated reading notes appear here
+    └── reading-processed/      # Processed reading files moved here
 ```
 
-## Setup Instructions
+## Complete Setup Guide
 
-### 1. Prerequisites
+### 1. Check Prerequisites
 
-- Python 3.8 or higher
-- FFmpeg (required for Whisper)
-- Gemini API key
+**Verify Python installation:**
+
+```bash
+python --version  # Should show 3.8 or higher
+```
+
+If not installed, download from [python.org](https://www.python.org/downloads/) and check "Add Python to PATH" during installation.
 
 ### 2. Install FFmpeg
 
-**Windows:**
+FFmpeg is **required** for audio processing.
+
+**Windows (using Chocolatey):**
 
 ```bash
-# Using Chocolatey
 choco install ffmpeg
-
-# Or download from https://ffmpeg.org/download.html
 ```
+
+**Windows (manual):**
+
+1. Download from [ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+2. Extract to `C:\ffmpeg`
+3. Add `C:\ffmpeg\bin` to system PATH
 
 **Mac:**
 
@@ -79,93 +112,141 @@ choco install ffmpeg
 brew install ffmpeg
 ```
 
-**Linux:**
+**Verify installation:**
 
 ```bash
-sudo apt update
-sudo apt install ffmpeg
+ffmpeg -version  # Should display version info
 ```
 
-### 3. Create Virtual Environment
+### 3. Set Up Project
+
+**Navigate to project directory:**
+
+```bash
+cd path/to/smart-law-notes
+```
+
+**Create virtual environment:**
 
 ```bash
 python -m venv venv
 ```
 
-**Activate:**
+**Activate virtual environment:**
 
 - Windows: `venv\Scripts\activate`
 - Mac/Linux: `source venv/bin/activate`
 
-### 4. Install Dependencies
+You should see `(venv)` in your terminal prompt.
+
+### 4. Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Configure Environment
+This installs:
 
-Create a `.env` file in the project root:
+- `faster-whisper` - Optimized audio transcription
+- `torch`, `torchvision`, `torchaudio` - PyTorch (CPU version)
+- `noisereduce` - Audio noise reduction
+- `soundfile` - Audio file I/O
+- `librosa` - Audio loading and processing
+- `scipy` - Signal processing for bandpass filtering
+- `tqdm` - Progress bars
+- `google-generativeai` - Gemini API
+- `python-dotenv` - Environment variable management
+
+**Verify installation:**
+
+```bash
+python -c "from faster_whisper import WhisperModel; print('Success!')"
+```
+
+### 5. Get Gemini API Key
+
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy the key (save it securely!)
+
+**Note:** Gemini API has a free tier. Check current limits at [ai.google.dev/pricing](https://ai.google.dev/pricing).
+
+### 6. Configure Environment Variables
+
+**Create `.env` file in project root:**
+
+```bash
+# Windows
+type nul > .env
+```
+
+**Add your API key:**
+
+Open `.env` in a text editor and add:
 
 ```
-GEMINI_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_actual_api_key_here
 ```
 
-Get your API key from: https://makersuite.google.com/app/apikey
+Replace `your_actual_api_key_here` with your key from step 5.
 
-### 6. Configure Classes
+**Important:** Never commit `.env` to git (it's in `.gitignore`).
 
-Edit `src/config.py` to add your class folders:
+### 7. Configure Class Paths
+
+**Edit `src/config.py`:**
+
+Update the `CLASSES` list with your class folder paths:
 
 ```python
 CLASSES = [
-    Path("C:\\path\\to\\Contracts"),
-    Path("C:\\path\\to\\Civ pro"),
-    Path("C:\\path\\to\\Torts"),
+    Path("C:\\Users\\YourName\\Documents\\Law school\\Contracts"),
+    Path("C:\\Users\\YourName\\Documents\\Law school\\Civ pro"),
+    Path("C:\\Users\\YourName\\Documents\\Law school\\Torts"),
 ]
 ```
 
-### 7. Create Prompt Files
+### 8. Create Prompt Files
 
-Create two markdown files in the `prompts/` folder:
+### 9. Prepare Your Files
 
-- `lecture.md` - System prompt for lecture note generation
-- `reading.md` - System prompt for reading note generation
+**For each class, add files to:**
 
-Example prompt structure:
+- `Class Name/LLM/lecture-input/` ← Put `.m4a` audio files here
+- `Class Name/LLM/reading-input/` ← Put `.txt` reading files here
 
-```markdown
-You are an expert legal educator creating comprehensive study notes.
-
-Analyze the provided text and create detailed notes that:
-
-1. Identify key concepts and principles
-2. Highlight important cases and holdings
-3. Explain complex legal doctrines clearly
-4. Provide examples and applications
-
-Format the notes with clear headings and bullet points.
-```
-
-## Usage
-
-### Run the Complete Pipeline
+### 10. Test Run
 
 ```bash
 cd src
 python main.py
 ```
 
-This will:
+**Expected behavior:**
 
-1. Verify folder structure for all classes
-2. Transcribe all audio files in `lecture-input/`
-3. Generate lecture notes from transcripts
-4. Generate reading notes from reading files
-5. Move processed files to appropriate folders
-6. Copy all outputs to `new-outputs-safe-delete/`
+1. ✓ Folder structure verification
+2. ✓ Audio transcription with progress bar
+3. ✓ LLM processing with status updates
+4. ✓ Files moved to processed folders
+5. ✓ Success summary displayed
 
-### Processing Steps
+**Check outputs:**
+
+- `Class Name/LLM/lecture-output/` ← Generated lecture notes (.md)
+- `Class Name/LLM/reading-output/` ← Generated reading notes (.md)
+- `new-outputs-safe-delete/` ← Backup of all outputs
+
+## Usage
+
+### Running the Pipeline
+
+```bash
+cd src
+python main.py
+```
+
+### What Happens
 
 **Step 1: Folder Verification**
 
@@ -174,98 +255,164 @@ This will:
 
 **Step 2: Audio Transcription**
 
-- Converts M4A files to text transcripts with timestamps
-- Audio preprocessing pipeline:
-  - Converts M4A to WAV (16kHz, mono)
-  - Applies noise reduction to remove background noise
-  - Applies bandpass filter (80Hz-8000Hz) for speech frequencies
-  - Normalizes audio levels to -20dB LUFS
-- Uses faster-whisper (large-v3) for most accurate transcription
-- CPU-optimized with int8 quantization (4 threads)
-- Shows progress bars during transcription
+- Converts M4A files to WAV (16kHz, mono)
+- Applies noise reduction to remove HVAC, shuffling, background noise
+- Applies bandpass filter (80Hz-8000Hz) focusing on speech frequencies
+- Normalizes audio levels to -20dB LUFS for consistent volume
+- Transcribes using faster-whisper large-v3 model
+- Generates timestamps in [HH:MM:SS] format for each segment
+- Shows real-time progress bars
 - Saves timestamped transcripts to `lecture-input/` folder
-- Expected performance: 3-4x real-time (1 hour lecture = 15-20 minutes)
+- Performance: 3-4x real-time (1 hour lecture = 15-20 minutes)
+
+**Example transcript output:**
+
+```
+[00:00:15] Welcome to Lecture 12 on Contract Formation.
+[00:00:32] Let's start with a review of offer and acceptance.
+[00:01:05] The key concept here is mutual assent between parties.
+```
 
 **Step 3: Lecture Note Generation**
 
-- Processes lecture transcripts with Gemini
+- Processes timestamped transcripts with Gemini
 - Uses multithreading for parallel API calls
+- Applies custom lecture prompt template
 - Saves markdown notes to `lecture-output/`
 - Moves transcripts to `lecture-processed/txt/`
+- Moves audio files to `lecture-processed/audio/`
 
 **Step 4: Reading Note Generation**
 
-- Processes reading files with Gemini
+- Processes reading text files with Gemini
 - Uses multithreading for parallel API calls
+- Applies custom reading prompt template
 - Saves markdown notes to `reading-output/`
 - Moves reading files to `reading-processed/`
 
-## Configuration Options
+**Step 5: Backup**
 
-Edit `src/config.py` to customize:
+- Copies all generated notes to `new-outputs-safe-delete/`
+- Organized by class for easy access
+
+## Configuration
+
+### Basic Settings
+
+Edit `src/config.py`:
 
 ```python
-# Gemini model
-GEMINI_MODEL = 'gemini-2.5-pro'
-
-# Max output tokens for generated notes
-MAX_OUTPUT_TOKENS = 9000
+# Gemini model selection
+GEMINI_MODEL = 'gemini-2.5-pro'  # or 'gemini-2.0-flash-exp' for faster/cheaper
 
 # Parallel processing workers
-MAX_AUDIO_WORKERS = 3   # Parallel processes for transcription (2-3 recommended)
-MAX_LLM_WORKERS = 5     # Threads for API calls
+MAX_AUDIO_WORKERS = 3   # Number of audio files to process simultaneously (2-3 recommended)
+MAX_LLM_WORKERS = 5     # Number of concurrent API calls (5-10 works well)
+
+# Class folders
+CLASSES = [
+    Path("C:\\path\\to\\Contracts"),
+    Path("C:\\path\\to\\Civ pro"),
+    Path("C:\\path\\to\\Torts"),
+]
 ```
 
-**Note**: Audio transcription now uses faster-whisper with CPU-optimized settings (large-v3 model, int8 compute, 4 CPU threads). These settings are hardcoded for optimal performance on AMD Ryzen 7 7730U processors.
+### Audio Processing (Advanced)
 
-## Workflow
+Audio settings are hardcoded in `src/audio_processor.py` for optimal CPU performance:
 
-1. **Place Files**: Add M4A files to `lecture-input/` and TXT files to `reading-input/`
-2. **Run Script**: Execute `python main.py`
-3. **Review Output**:
-   - Individual class folders contain class-specific notes
-   - `new-outputs-safe-delete/` contains all generated notes
-4. **Input Folders**: Will be empty after processing (files moved to `processed/`)
+- Model: `large-v3` (most accurate)
+- Device: `cpu` (AMD Ryzen 7 optimized)
+- Compute type: `int8` (faster CPU inference)
+- CPU threads: `4` (safe limit to avoid overheating)
+
+**To reduce CPU usage** (if system gets too hot), edit `src/audio_processor.py` line 275:
+
+```python
+cpu_threads = 3  # Reduce from 4 to 3
+```
+
+### Optimization Tips
+
+**For faster processing:**
+
+```python
+MAX_AUDIO_WORKERS = 2      # Process fewer files at once
+MAX_LLM_WORKERS = 10       # More API calls in parallel
+GEMINI_MODEL = 'gemini-2.0-flash-exp'  # Faster model
+```
+
+**For better quality:**
+
+```python
+GEMINI_MODEL = 'gemini-2.5-pro'  # Better model
+```
+
+**For cost efficiency:**
+
+```python
+GEMINI_MODEL = 'gemini-2.0-flash-exp'  # Free tier friendly
+MAX_LLM_WORKERS = 3                    # Slower rate limits
+```
 
 ## Troubleshooting
 
-**"FFmpeg not found" error:**
+### Installation Issues
 
-- Ensure FFmpeg is installed and in your system PATH
-- Test with: `ffmpeg -version`
+**"FFmpeg not found"**
 
-**"GEMINI_API_KEY not found" error:**
+- Solution: Run `choco install ffmpeg` and restart terminal
+- Verify: `ffmpeg -version`
 
-- Check `.env` file exists in project root
-- Verify API key is valid
+**"faster_whisper not found"**
 
-**"Module not found" errors:**
+- Solution: `pip install faster-whisper`
+- Verify: `python -c "from faster_whisper import WhisperModel; print('Success!')"`
 
-- Ensure virtual environment is activated
-- Reinstall: `pip install -r requirements.txt`
+**"Module not found" errors**
 
-**Slow processing:**
+- Solution: Ensure venv is activated (`(venv)` in prompt), then `pip install -r requirements.txt`
 
-- Transcription is CPU-optimized (int8, 4 threads) for ~3-4x real-time speed
-- Increase `MAX_AUDIO_WORKERS` in config.py (2-3 recommended for parallel files)
-- Don't exceed 4 CPU threads to avoid system instability
-- Increase `MAX_LLM_WORKERS` for faster API processing (5-10 works well)
+### Configuration Issues
 
-**API rate limits:**
+**"GEMINI_API_KEY not found"**
 
-- Reduce `MAX_LLM_WORKERS` to slow down API requests
-- Add delays between batches if needed
+- Check `.env` file exists in project root (not in `src/`)
+- Verify format: `GEMINI_API_KEY=your_key` (no quotes, no spaces around `=`)
+- Ensure API key is valid at [Google AI Studio](https://makersuite.google.com/)
 
-**Audio preprocessing errors:**
+**"Permission denied" or "Access denied"**
 
-- Ensure FFmpeg is properly installed (required for pydub)
-- Check M4A files are not corrupted
-- Verify sufficient disk space for temporary WAV files
+- Close programs using the audio files
+- Run terminal as administrator (Windows)
+- Check file permissions
 
-**Out of memory errors:**
+**Script runs but no output**
 
-- Reduce `MAX_AUDIO_WORKERS` to process fewer files simultaneously
-- Close other applications to free up RAM
+- Verify files are in correct input folders
+- Check file extensions (`.m4a` for audio, `.txt` for readings)
+- Review class paths in `config.py` for typos
+- Check terminal for error messages
+
+### Performance Issues
+
+**Slow transcription**
+
+- Current settings are optimal for CPU (3-4x real-time)
+- Cannot be improved without NVIDIA GPU with CUDA
+- Process overnight for very long files
+- Close other applications to free CPU resources
+
+**Computer overheating**
+
+- Reduce CPU threads in `audio_processor.py` from 4 to 3
+- Reduce `MAX_AUDIO_WORKERS` to 2 or 1
+- Ensure laptop has adequate ventilation
+
+**Out of memory errors**
+
+- Reduce `MAX_AUDIO_WORKERS` to process fewer files simultaneously (try 2 or 1)
+- Close other applications to free RAM
 - Process classes one at a time if needed
 
 ## Notes
@@ -279,3 +426,7 @@ MAX_LLM_WORKERS = 5     # Threads for API calls
 ## License
 
 Personal use for law school studies.
+
+---
+
+**Good luck with your studies! 📚⚖️**
