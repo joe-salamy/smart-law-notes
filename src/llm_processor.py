@@ -32,7 +32,7 @@ def read_file(filepath: Path) -> Optional[str]:
 
 def load_system_prompt(prompt_file: str, class_name: str) -> Optional[str]:
     """
-    Load system prompt from prompts folder and append class context.
+    Load system prompt from prompts folder and substitute class name.
 
     Args:
         prompt_file: Name of the prompt file to load
@@ -47,7 +47,7 @@ def load_system_prompt(prompt_file: str, class_name: str) -> Optional[str]:
     if base_prompt is None:
         return None
 
-    return f"{base_prompt}\nImportant context: this task is for the class {class_name}"
+    return base_prompt.format(class_name=class_name)
 
 
 def process_with_gemini(
@@ -135,6 +135,54 @@ def process_single_file(
         return False, f"Error: {str(e)}", input_file
 
 
+def execute_parallel_processing(
+    task_args: List[Tuple[Path, genai.GenerativeModel, Path, Path, Path, bool]],
+    total_files: int,
+) -> Tuple[int, int]:
+    """
+    Execute parallel processing of files using ThreadPoolExecutor.
+
+    Args:
+        task_args: List of argument tuples for process_single_file
+        total_files: Total number of files to process
+
+    Returns:
+        Tuple of (successful_count, failed_count)
+    """
+    successful = 0
+    failed = 0
+
+    # Process files in parallel with threads (I/O bound)
+    with ThreadPoolExecutor(max_workers=config.MAX_LLM_WORKERS) as executor:
+        futures = {
+            executor.submit(process_single_file, args): args[0] for args in task_args
+        }
+
+        for future in as_completed(futures):
+            txt_file = futures[future]
+            try:
+                success, message, original_file = future.result()
+
+                if success:
+                    successful += 1
+                    print(
+                        f"    ✓ [{successful + failed}/{total_files}] {original_file.name}"
+                    )
+                else:
+                    failed += 1
+                    print(
+                        f"    ✗ [{successful + failed}/{total_files}] {original_file.name}: {message}"
+                    )
+
+            except Exception as e:
+                failed += 1
+                print(
+                    f"    ✗ [{successful + failed}/{total_files}] {txt_file.name}: Unexpected error: {e}"
+                )
+
+    return successful, failed
+
+
 def process_class_files(
     class_folder: Path, is_reading: bool, new_outputs_dir: Path, api_key: str
 ) -> Tuple[int, int]:
@@ -208,41 +256,11 @@ def process_class_files(
         for txt_file in txt_files
     ]
 
-    successful = 0
-    failed = 0
-
-    # Process files in parallel with threads (I/O bound)
-    with ThreadPoolExecutor(max_workers=config.MAX_LLM_WORKERS) as executor:
-        futures = {
-            executor.submit(process_single_file, args): args[0] for args in task_args
-        }
-
-        for future in as_completed(futures):
-            txt_file = futures[future]
-            try:
-                success, message, original_file = future.result()
-
-                if success:
-                    successful += 1
-                    print(
-                        f"    ✓ [{successful + failed}/{len(txt_files)}] {original_file.name}"
-                    )
-                else:
-                    failed += 1
-                    print(
-                        f"    ✗ [{successful + failed}/{len(txt_files)}] {original_file.name}: {message}"
-                    )
-
-            except Exception as e:
-                failed += 1
-                print(
-                    f"    ✗ [{successful + failed}/{len(txt_files)}] {txt_file.name}: Unexpected error: {e}"
-                )
-
-    return successful, failed
+    # Execute parallel processing
+    return execute_parallel_processing(task_args, len(txt_files))
 
 
-def process_all_lecture_transcripts(classes: List[Path], new_outputs_dir: Path) -> None:
+def process_all_lectures(classes: List[Path], new_outputs_dir: Path) -> None:
     """Process lecture transcripts for all classes."""
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:

@@ -3,9 +3,11 @@ Folder structure verification and creation.
 Ensures each class has the required folder hierarchy.
 """
 
+import sys
 from pathlib import Path
 from typing import List
 import config
+from file_mover import setup_output_directory
 
 
 def verify_and_create_folders(class_folder: Path) -> None:
@@ -115,3 +117,55 @@ def get_txt_files(class_folder: Path, reading: bool = False) -> List[Path]:
         return []
 
     return list(input_folder.glob("*.txt"))
+
+
+def setup_and_verify(classes: List[Path]) -> Path:
+    """
+    Setup output directory and verify folder structure for all classes.
+
+    Args:
+        classes: List of class folder paths
+
+    Returns:
+        Path to the output directory
+
+    Raises:
+        SystemExit: If setup or verification fails
+    """
+    # Setup new-outputs-safe-delete directory
+    try:
+        output_dir = setup_output_directory()
+        print(f"\n✓ Output directory ready: {output_dir}")
+    except Exception as e:
+        print(f"\n✗ Error setting up output directory: {e}")
+        sys.exit(1)
+
+    # Verify all class folders have correct structure
+    print(f"\n{'=' * 70}")
+    print("STEP 1: Verifying Folder Structure")
+    print("=" * 70)
+
+    for class_folder in classes:
+        class_name = Path(class_folder).name
+        print(f"\nVerifying: {class_name}")
+        try:
+            verify_and_create_folders(class_folder)
+            print(f"  ✓ Folder structure verified")
+        except Exception as e:
+            print(f"  ✗ Error: {e}")
+            sys.exit(1)
+
+    # Process lecture audio files to transcripts
+    print(f"\n{'=' * 70}")
+    print("STEP 2: Converting Lecture Audio to Text")
+    print("=" * 70)
+
+    from audio_processor import process_all_lectures
+
+    try:
+        process_all_lectures(classes)
+    except Exception as e:
+        print(f"\n✗ Error processing lectures: {e}")
+        sys.exit(1)
+
+    return output_dir

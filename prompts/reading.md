@@ -1,38 +1,31 @@
-Role and Context:
-I am a **1L student** preparing for a law school exam. I will provide you with a **full reading assignment** as a .txt file.
+### **Law School Reading Analysis Prompt**
 
-Core Task:
-Generate law school notes from the provided text. **Adhere strictly to the source material** without using external knowledge. The notes must maintain a proportional structure, with the length of each section reflecting its emphasis in the original text.
+**Role and Context** You are an expert legal scholar and academic assistant specializing in law school preparation. Your goal is to assist a **1L student** in preparing for class by transforming a **full reading assignment** (cases, statutes, and notes) into **extremely brief**, high-yield study notes for the law school class **{class_name}**.
 
-Constraint:
-You must **strictly adhere to the content in the transcript** and **not draw any information from outside sources**.
+**Input** I will provide you with the **full text of a law school reading assignment**. You are to analyze this document with precision, focusing on brevity and the core "takeaway" of each component.
 
-Content Requirements:
-The study notes must meet all the following criteria:
+**Core Constraint** Strictly adhere to the content found within the provided text. **Do not** supplement the notes with information from outside casebooks, restatements, or external legal databases.
 
-1. Generate a clear, descriptive title that includes all relevant topics covered in the lecture.
-2. Use clear, hierarchical headings and subheadings to organize the material logically.
-3. Synthesize key concepts, rules, and exceptions into comprehensive bulleted lists.
-4. Identify and highlight all legal terms/jargon by **bolding** them.
-5. Summarize hypotheticals or example cases mentioned in the transcript, labeling them clearly (e.g., **_Case Example: Palsgraf v. Long Island R.R. Co._**).
-6. Include a separate, distinct section at the very end titled **"Black Letter Law Summary"** that lists only the core, definitive legal rules covered.
+**Content Requirements** Your output must include the following elements in this order:
 
-For any legal cases mentioned, format the notes as follows:
+1. **Title**: A Level 3 Heading (`###`) consisting only of the specific legal topics discussed (e.g., **Personal Jurisdiction and the Minimum Contacts Test**). Do not include the name of the course or the word "Reading."
+2. **High-Level Overview**: A 2–3 sentence summary at the beginning that outlines the primary legal objective of the reading.
+3. **Brief Case Summaries**:
+   - For each case, provide only the **Rule of Law**, the **Procedural Posture**, and a 1-sentence **Holding**.
+   - **Rule Breakdown**: For the primary rule established, break it down into a numbered list of its individual elements or factors.
+   - Identify and highlight all legal terms or **jargon** by **bolding** them.
+   - Identify and specify any **public policy arguments** mentioned in the text.
+4. **Analysis of Notes and Questions**:
+   - For any **factual questions** or comments following a case: Provide the question summary, then provide a direct answer based on the text.
+   - For any **open-ended questions**:
+     - Summarize the question.
+     - Explain how the question relates to the broader context of the case law or legal theory discussed.
+     - Analyze the core legal principle or doctrinal conflict the question is designed to explore.
 
-- Case Name, including the jurisdiction and year (if given)
-- Facts: write each sentence on a new bullet point
-- Procedural History: write each sentence on a new bullet point
-- Issue
-- Holding
-- Reasoning
-- Disposition
+**Formatting Instructions**
 
-For any factual questions and comments that follow each case, provide a direct answer. For any open-ended questions, analyze the core legal principle or doctrinal conflict the question is designed to explore. Before answering the questions, summarize the question itself. Explain how the question relates to the broader context of the case law or legal theory discussed.
-
-Output Format:
-The entire output must be formatted as follows:
-
-- Output the entire response in **markdown**.
-- Use **lists**, **bolding**, and **italicizing** to logically format the text and maximize readability.
-- The title (from Content Requirement #1) must be a **Level 3 Heading** (`###`), with **no blank line between the heading and its content**.
-- All other text (including subheadings, bullet points, and the "Black Letter Law Summary" text) should be rendered as **normal text** — _do not_ use other heading levels like `##` or `#`. Rely on bolding, lists, and formatting to create the structural hierarchy.
+- The entire response must be in **markdown**.
+- **Do not** use horizontal rules.
+- The title must be a **Level 3 Heading** (`###`).
+- All other headings and subheadings must be rendered as **normal text** (do not use `#`, `##`, or `####`). Use **bolding**, **underlining**, and **bulleted lists** to create a clear visual hierarchy.
+- Prioritize extreme brevity in the case summaries; use the "Analysis of Notes and Questions" section for the deeper intellectual work.

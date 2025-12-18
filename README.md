@@ -4,7 +4,11 @@ Automated system for generating lecture and reading notes from audio files and t
 
 ## Features
 
-- **Audio Transcription**: Converts M4A lecture recordings to text using OpenAI Whisper
+- **Audio Transcription**: Converts M4A lecture recordings to text using faster-whisper (large-v3 model) with timestamps
+  - CPU-optimized with int8 quantization for fast processing
+  - Audio preprocessing: noise reduction, bandpass filtering, normalization
+  - Segment-level timestamps in [HH:MM:SS] format for easy navigation
+  - Progress bars showing real-time transcription status
 - **AI Note Generation**: Creates structured notes from transcripts and readings using Google Gemini
 - **Parallel Processing**: Uses multiprocessing for transcription and multithreading for API calls
 - **Multi-Class Support**: Processes multiple law school classes simultaneously
@@ -170,9 +174,17 @@ This will:
 
 **Step 2: Audio Transcription**
 
-- Converts M4A files to text transcripts
-- Uses multiprocessing for parallel transcription
-- Saves transcripts to `lecture-input/` folder
+- Converts M4A files to text transcripts with timestamps
+- Audio preprocessing pipeline:
+  - Converts M4A to WAV (16kHz, mono)
+  - Applies noise reduction to remove background noise
+  - Applies bandpass filter (80Hz-8000Hz) for speech frequencies
+  - Normalizes audio levels to -20dB LUFS
+- Uses faster-whisper (large-v3) for most accurate transcription
+- CPU-optimized with int8 quantization (4 threads)
+- Shows progress bars during transcription
+- Saves timestamped transcripts to `lecture-input/` folder
+- Expected performance: 3-4x real-time (1 hour lecture = 15-20 minutes)
 
 **Step 3: Lecture Note Generation**
 
@@ -193,19 +205,18 @@ This will:
 Edit `src/config.py` to customize:
 
 ```python
-# Whisper model (tiny=fastest, large=most accurate)
-WHISPER_MODEL = 'tiny'
-
 # Gemini model
-GEMINI_MODEL = 'gemini-2.0-flash-exp'
+GEMINI_MODEL = 'gemini-2.5-pro'
 
 # Max output tokens for generated notes
 MAX_OUTPUT_TOKENS = 9000
 
 # Parallel processing workers
-MAX_AUDIO_WORKERS = 4   # CPU cores for transcription
+MAX_AUDIO_WORKERS = 3   # Parallel processes for transcription (2-3 recommended)
 MAX_LLM_WORKERS = 5     # Threads for API calls
 ```
+
+**Note**: Audio transcription now uses faster-whisper with CPU-optimized settings (large-v3 model, int8 compute, 4 CPU threads). These settings are hardcoded for optimal performance on AMD Ryzen 7 7730U processors.
 
 ## Workflow
 
@@ -235,14 +246,27 @@ MAX_LLM_WORKERS = 5     # Threads for API calls
 
 **Slow processing:**
 
-- Increase `MAX_AUDIO_WORKERS` for transcription (use # of CPU cores)
-- Increase `MAX_LLM_WORKERS` for API calls (5-10 works well)
-- Use smaller Whisper model (`tiny` or `base`)
+- Transcription is CPU-optimized (int8, 4 threads) for ~3-4x real-time speed
+- Increase `MAX_AUDIO_WORKERS` in config.py (2-3 recommended for parallel files)
+- Don't exceed 4 CPU threads to avoid system instability
+- Increase `MAX_LLM_WORKERS` for faster API processing (5-10 works well)
 
 **API rate limits:**
 
 - Reduce `MAX_LLM_WORKERS` to slow down API requests
 - Add delays between batches if needed
+
+**Audio preprocessing errors:**
+
+- Ensure FFmpeg is properly installed (required for pydub)
+- Check M4A files are not corrupted
+- Verify sufficient disk space for temporary WAV files
+
+**Out of memory errors:**
+
+- Reduce `MAX_AUDIO_WORKERS` to process fewer files simultaneously
+- Close other applications to free up RAM
+- Process classes one at a time if needed
 
 ## Notes
 

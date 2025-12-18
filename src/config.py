@@ -4,7 +4,6 @@ Edit the class folders list to match your directory structure.
 """
 
 from pathlib import Path
-import os
 
 # ========== EDIT THESE PATHS ==========
 
@@ -27,14 +26,7 @@ GEMINI_MODEL = "gemini-2.5-pro"
 MAX_OUTPUT_TOKENS = 9000
 
 # Number of parallel processes/threads
-# Determine a sensible default number of workers for CPU-only transcription.
-# Use (cpu_count - 1) to leave one core free for system responsiveness, but
-# cap the value to avoid large memory usage when multiple models are loaded.
-# For your laptop (Ryzen CPU, 16GB RAM) this will usually pick a reasonable value.
-_CPU_COUNT = os.cpu_count() or 1
-MAX_AUDIO_WORKERS = min(
-    6, max(1, _CPU_COUNT - 1)
-)  # Multiprocessing for CPU-intensive transcription
+MAX_AUDIO_WORKERS = 3  # Multiprocessing for CPU-intensive transcription
 MAX_LLM_WORKERS = 5  # Multithreading for I/O-bound API calls
 
 # ========== FOLDER STRUCTURE ==========
