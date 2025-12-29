@@ -8,6 +8,10 @@ from pathlib import Path
 from typing import List
 import config
 from file_mover import setup_output_directory
+from logger_config import get_logger
+
+# Initialize logger
+logger = get_logger(__name__)
 
 
 def verify_and_create_folders(class_folder: Path) -> None:
@@ -23,7 +27,10 @@ def verify_and_create_folders(class_folder: Path) -> None:
     if not isinstance(class_folder, Path):
         class_folder = Path(class_folder)
 
+    logger.debug(f"Verifying folder structure for: {class_folder}")
+
     if not class_folder.exists():
+        logger.error(f"Class folder does not exist: {class_folder}")
         raise Exception(f"Class folder does not exist: {class_folder}")
 
     # Define all required folders
@@ -39,13 +46,17 @@ def verify_and_create_folders(class_folder: Path) -> None:
         llm_base / config.READING_PROCESSED,
     ]
 
+    logger.debug(f"Creating {len(required_folders)} required folders")
     # Create all folders
     for folder in required_folders:
         try:
             folder.mkdir(parents=True, exist_ok=True)
+            logger.debug(f"Folder verified/created: {folder}")
         except Exception as e:
+            logger.error(f"Failed to create folder {folder}: {e}", exc_info=True)
             raise Exception(f"Failed to create folder {folder}: {e}")
 
+    logger.debug(f"Folder structure verification complete for: {class_folder.name}")
     return None
 
 
@@ -93,10 +104,15 @@ def get_audio_files(class_folder: Path) -> List[Path]:
     paths = get_class_paths(class_folder)
     lecture_input = paths["lecture_input"]
 
+    logger.debug(f"Searching for audio files in: {lecture_input}")
+
     if not lecture_input.exists():
+        logger.debug(f"Lecture input folder does not exist: {lecture_input}")
         return []
 
-    return list(lecture_input.glob("*.m4a"))
+    audio_files = list(lecture_input.glob("*.m4a"))
+    logger.debug(f"Found {len(audio_files)} audio files in {lecture_input}")
+    return audio_files
 
 
 def get_txt_files(class_folder: Path, reading: bool = False) -> List[Path]:
@@ -112,60 +128,14 @@ def get_txt_files(class_folder: Path, reading: bool = False) -> List[Path]:
     """
     paths = get_class_paths(class_folder)
     input_folder = paths["reading_input"] if reading else paths["lecture_input"]
+    file_type = "reading" if reading else "lecture"
+
+    logger.debug(f"Searching for {file_type} TXT files in: {input_folder}")
 
     if not input_folder.exists():
+        logger.debug(f"Input folder does not exist: {input_folder}")
         return []
 
-    return list(input_folder.glob("*.txt"))
-
-
-def setup_and_verify(classes: List[Path]) -> Path:
-    """
-    Setup output directory and verify folder structure for all classes.
-
-    Args:
-        classes: List of class folder paths
-
-    Returns:
-        Path to the output directory
-
-    Raises:
-        SystemExit: If setup or verification fails
-    """
-    # Setup new-outputs-safe-delete directory
-    try:
-        output_dir = setup_output_directory()
-        print(f"\n✓ Output directory ready: {output_dir}")
-    except Exception as e:
-        print(f"\n✗ Error setting up output directory: {e}")
-        sys.exit(1)
-
-    # Verify all class folders have correct structure
-    print(f"\n{'=' * 70}")
-    print("STEP 1: Verifying Folder Structure")
-    print("=" * 70)
-
-    for class_folder in classes:
-        class_name = Path(class_folder).name
-        print(f"\nVerifying: {class_name}")
-        try:
-            verify_and_create_folders(class_folder)
-            print(f"  ✓ Folder structure verified")
-        except Exception as e:
-            print(f"  ✗ Error: {e}")
-            sys.exit(1)
-
-    # Process lecture audio files to transcripts
-    print(f"\n{'=' * 70}")
-    print("STEP 2: Converting Lecture Audio to Text")
-    print("=" * 70)
-
-    from audio_processor import process_all_lectures
-
-    try:
-        process_all_lectures(classes)
-    except Exception as e:
-        print(f"\n✗ Error processing lectures: {e}")
-        sys.exit(1)
-
-    return output_dir
+    txt_files = list(input_folder.glob("*.txt"))
+    logger.debug(f"Found {len(txt_files)} {file_type} TXT files in {input_folder}")
+    return txt_files

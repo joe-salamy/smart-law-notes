@@ -8,6 +8,10 @@ from pathlib import Path
 from datetime import datetime
 
 import config
+from logger_config import get_logger
+
+# Initialize logger
+logger = get_logger(__name__)
 
 
 def setup_output_directory() -> Path:
@@ -20,9 +24,12 @@ def setup_output_directory() -> Path:
     output_dir = config.NEW_OUTPUTS_DIR
 
     try:
+        logger.debug(f"Setting up output directory: {output_dir}")
         output_dir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Output directory ready: {output_dir}")
         return output_dir
     except Exception as e:
+        logger.error(f"Failed to create output directory {output_dir}: {e}", exc_info=True)
         raise Exception(f"Failed to create output directory: {e}")
 
 
@@ -38,6 +45,7 @@ def move_to_processed(file_path: Path, processed_folder: Path) -> bool:
         True if successful, False otherwise
     """
     try:
+        logger.debug(f"Moving file to processed: {file_path.name} -> {processed_folder}")
         processed_folder.mkdir(parents=True, exist_ok=True)
         destination = processed_folder / file_path.name
 
@@ -47,12 +55,14 @@ def move_to_processed(file_path: Path, processed_folder: Path) -> bool:
             stem = destination.stem
             suffix = destination.suffix
             destination = processed_folder / f"{stem}_{timestamp}{suffix}"
+            logger.debug(f"Destination exists, using timestamped name: {destination.name}")
 
         shutil.move(str(file_path), str(destination))
+        logger.debug(f"File moved successfully: {file_path.name} -> {destination}")
         return True
 
     except Exception as e:
-        print(f"    ✗ Error moving {file_path.name}: {e}")
+        logger.error(f"Error moving {file_path.name}: {e}", exc_info=True)
         return False
 
 
@@ -68,6 +78,7 @@ def copy_to_new_outputs(file_path: Path, new_outputs_dir: Path) -> bool:
         True if successful, False otherwise
     """
     try:
+        logger.debug(f"Copying file to new-outputs: {file_path.name} -> {new_outputs_dir}")
         new_outputs_dir.mkdir(parents=True, exist_ok=True)
         destination = new_outputs_dir / file_path.name
 
@@ -77,12 +88,14 @@ def copy_to_new_outputs(file_path: Path, new_outputs_dir: Path) -> bool:
             stem = destination.stem
             suffix = destination.suffix
             destination = new_outputs_dir / f"{stem}_{timestamp}{suffix}"
+            logger.debug(f"Destination exists, using timestamped name: {destination.name}")
 
         shutil.copy2(str(file_path), str(destination))
+        logger.debug(f"File copied successfully: {file_path.name} -> {destination}")
         return True
 
     except Exception as e:
-        print(f"    ✗ Error copying {file_path.name} to new-outputs: {e}")
+        logger.error(f"Error copying {file_path.name} to new-outputs: {e}", exc_info=True)
         return False
 
 

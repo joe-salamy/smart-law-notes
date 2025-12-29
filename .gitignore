@@ -1,7 +1,6 @@
 # Virtual Environment
 venv/
 env/
-ENV/
 .venv/
 
 # Environment variables
@@ -11,36 +10,50 @@ ENV/
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
+.pytest_cache/
+.mypy_cache/
 
 # Distribution / packaging
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Logs
 *.log
+logs/
+
+# ML Models and Cache (faster-whisper, PyTorch, etc.)
+models/
+.cache/
+*.pt
+*.pth
+*.bin
+*.onnx
+hub/
+checkpoints/
+
+# Audio processing temporary files
+*.wav
+*.m4a
+*.mp3
+*.flac
+temp_audio/
+preprocessed_audio/
+
+# Project-specific input/output folders
+lecture-input/
+lecture-output/
+lecture-processed/
+reading-input/
+reading-output/
+reading-processed/
+new-outputs-safe-delete/
+
+# Large dataset files
+*.txt.gz
+*.zip
+*.tar.gz
