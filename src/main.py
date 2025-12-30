@@ -5,7 +5,6 @@ Processes lecture audio and reading text files for multiple classes.
 
 import sys
 from pathlib import Path
-from typing import List
 from config import CLASSES
 from llm_processor import process_all_readings, process_all_lectures
 from folder_manager import verify_and_create_folders

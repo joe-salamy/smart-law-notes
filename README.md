@@ -12,6 +12,17 @@ Automated system for generating lecture and reading notes from audio files and t
 6. Place M4A files in `lecture-input/` folders
 7. Run: `cd src && python main.py`
 
+### Monitor Progress in Real-Time
+
+Audio transcription can take a while (15-20 min per hour of audio). To monitor detailed progress while the script runs:
+
+```powershell
+# In a separate terminal (automatically uses most recent log file):
+Get-Content (Get-ChildItem "logs\*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1) -Wait -Tail 50
+```
+
+This shows the last 50 log lines and streams new entries as they're written. You can also open the log file in a text editor, but it won't auto-update. `Get-Content -Wait` is recommended for live monitoring.
+
 ## Features
 
 ### Audio Transcription
