@@ -155,7 +155,7 @@ def format_transcription_paragraphs(
 
     for segment in segments_list:
         gap = segment.start - prev_end_time
-        
+
         # Calculate what duration would be if we add this segment
         if current_paragraph:
             duration_with_new_segment = segment.end - paragraph_start_time

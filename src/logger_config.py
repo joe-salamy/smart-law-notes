@@ -61,9 +61,9 @@ def setup_logging(log_dir: Path = None) -> logging.Logger:
     logger.addHandler(console_handler)
 
     # Log initialization
-    logger.info(f"{'=' * 70}")
+    logger.info("=" * 70)
     logger.info(f"Logging initialized - Log file: {log_file}")
-    logger.info(f"{'=' * 70}")
+    logger.info("=" * 70)
 
     return logger
 

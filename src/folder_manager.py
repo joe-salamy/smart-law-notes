@@ -104,8 +104,6 @@ def get_audio_files(class_folder: Path) -> List[Path]:
     paths = get_class_paths(class_folder)
     lecture_input = paths["lecture_input"]
 
-    logger.debug(f"Searching for audio files in: {lecture_input}")
-
     if not lecture_input.exists():
         logger.debug(f"Lecture input folder does not exist: {lecture_input}")
         return []

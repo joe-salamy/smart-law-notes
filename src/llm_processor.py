@@ -196,13 +196,13 @@ def execute_parallel_processing(
                 if success:
                     successful += 1
                     logger.info(
-                        f"    ✓ [{successful + failed}/{total_files}] {original_file.name}"
+                        f"✓ [{successful + failed}/{total_files}] {original_file.name}"
                     )
                     logger.debug(f"Successfully processed {original_file.name}")
                 else:
                     failed += 1
                     logger.info(
-                        f"    ✗ [{successful + failed}/{total_files}] {original_file.name}: {message}"
+                        f"✗ [{successful + failed}/{total_files}] {original_file.name}: {message}"
                     )
                     logger.error(f"Failed to process {original_file.name}: {message}")
 
@@ -212,7 +212,7 @@ def execute_parallel_processing(
                     f"Unexpected error processing {txt_file.name}: {e}", exc_info=True
                 )
                 logger.info(
-                    f"    ✗ [{successful + failed}/{total_files}] {txt_file.name}: Unexpected error: {e}"
+                    f"✗ [{successful + failed}/{total_files}] {txt_file.name}: Unexpected error: {e}"
                 )
 
     logger.debug(
@@ -256,11 +256,10 @@ def process_class_files(
     logger.debug(f"Processing {file_type} files for {class_name}")
 
     if not txt_files:
-        logger.info(f"  No {file_type} files found")
-        logger.debug(f"No {file_type} files in {class_folder}")
+        logger.info(f"No {file_type} files found")
         return 0, 0
 
-    logger.info(f"  Found {len(txt_files)} {file_type} file(s)")
+    logger.info(f"Found {len(txt_files)} {file_type} file(s)")
     logger.debug(f"{file_type} files: {[f.name for f in txt_files]}")
 
     # Load system prompt
@@ -270,11 +269,11 @@ def process_class_files(
         system_prompt = load_system_prompt(prompt_file, class_name)
         if system_prompt is None:
             logger.error(f"Error loading prompt for {class_name}")
-            logger.info(f"  ✗ Error loading prompt")
+            logger.info(f"✗ Error loading prompt")
             return 0, len(txt_files)
     except Exception as e:
         logger.error(f"Error loading prompt for {class_name}: {e}", exc_info=True)
-        logger.info(f"  ✗ Error loading prompt: {e}")
+        logger.info(f"✗ Error loading prompt: {e}")
         return 0, len(txt_files)
 
     # Configure API and create a single GenerativeModel for this class.
@@ -291,7 +290,7 @@ def process_class_files(
         logger.error(
             f"Error creating GenerativeModel for {class_name}: {e}", exc_info=True
         )
-        logger.info(f"  ✗ Error creating GenerativeModel: {e}")
+        logger.info(f"✗ Error creating GenerativeModel: {e}")
         return 0, len(txt_files)
 
     # Prepare arguments for parallel processing: pass the shared model into each task.
@@ -319,7 +318,7 @@ def process_all_lectures(classes: List[Path], new_outputs_dir: Path) -> None:
         logger.error("GEMINI_API_KEY not found in .env file")
         raise Exception("GEMINI_API_KEY not found in .env file")
 
-    logger.info(f"\nUsing model: {config.GEMINI_MODEL}")
+    logger.info(f"Using model: {config.GEMINI_MODEL}")
     logger.info(f"Parallel workers: {config.MAX_LLM_WORKERS}")
     logger.debug(f"Processing lecture transcripts for {len(classes)} classes")
 
@@ -329,7 +328,8 @@ def process_all_lectures(classes: List[Path], new_outputs_dir: Path) -> None:
     for class_folder in classes:
         paths = get_class_paths(class_folder)
         class_name = paths["class_name"]
-        logger.info(f"\n{class_name}:")
+        logger.info("─" * 70)
+        logger.info(f"{class_name}:")
         logger.debug(f"Processing class folder: {class_folder}")
 
         try:
@@ -344,19 +344,19 @@ def process_all_lectures(classes: List[Path], new_outputs_dir: Path) -> None:
             total_failed += failed
 
             if successful > 0:
-                logger.info(f"  ✓ Processed {successful} file(s)")
+                logger.info(f"✓ Processed {successful} file(s)")
                 logger.debug(
                     f"{class_name}: {successful} lecture files processed successfully"
                 )
             if failed > 0:
-                logger.info(f"  ✗ Failed {failed} file(s)")
+                logger.info(f"✗ Failed {failed} file(s)")
                 logger.warning(f"{class_name}: {failed} lecture files failed")
 
         except Exception as e:
             logger.error(f"Error processing class {class_name}: {e}", exc_info=True)
-            logger.info(f"  ✗ Error processing class: {e}")
+            logger.info(f"✗ Error processing class: {e}")
 
-    logger.info(f"\n{'─' * 70}")
+    logger.info("─" * 70)
     logger.info(
         f"Lecture Notes Summary: {total_successful} successful, {total_failed} failed"
     )
@@ -373,7 +373,7 @@ def process_all_readings(classes: List[Path], new_outputs_dir: Path) -> None:
         logger.error("GEMINI_API_KEY not found in .env file")
         raise Exception("GEMINI_API_KEY not found in .env file")
 
-    logger.info(f"\nUsing model: {config.GEMINI_MODEL}")
+    logger.info(f"Using model: {config.GEMINI_MODEL}")
     logger.info(f"Parallel workers: {config.MAX_LLM_WORKERS}")
     logger.debug(f"Processing reading files for {len(classes)} classes")
 
@@ -383,7 +383,8 @@ def process_all_readings(classes: List[Path], new_outputs_dir: Path) -> None:
     for class_folder in classes:
         paths = get_class_paths(class_folder)
         class_name = paths["class_name"]
-        logger.info(f"\n{class_name}:")
+        logger.info("─" * 70)
+        logger.info(f"{class_name}:")
         logger.debug(f"Processing class folder: {class_folder}")
 
         try:
@@ -398,19 +399,19 @@ def process_all_readings(classes: List[Path], new_outputs_dir: Path) -> None:
             total_failed += failed
 
             if successful > 0:
-                logger.info(f"  ✓ Processed {successful} file(s)")
+                logger.info(f"✓ Processed {successful} file(s)")
                 logger.debug(
                     f"{class_name}: {successful} reading files processed successfully"
                 )
             if failed > 0:
-                logger.info(f"  ✗ Failed {failed} file(s)")
+                logger.info(f"✗ Failed {failed} file(s)")
                 logger.warning(f"{class_name}: {failed} reading files failed")
 
         except Exception as e:
             logger.error(f"Error processing class {class_name}: {e}", exc_info=True)
-            logger.info(f"  ✗ Error processing class: {e}")
+            logger.info(f"✗ Error processing class: {e}")
 
-    logger.info(f"\n{'─' * 70}")
+    logger.info("─" * 70)
     logger.info(
         f"Reading Notes Summary: {total_successful} successful, {total_failed} failed"
     )

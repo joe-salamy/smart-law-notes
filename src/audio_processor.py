@@ -135,7 +135,7 @@ def transcribe_single_file(
         duration_minutes = len(audio_data) / sample_rate / 60
         total_duration_seconds = len(audio_data) / sample_rate
         logger.info(
-            f"[PREPROCESSING DONE] {audio_file.name} - Duration: {duration_minutes:.1f} minutes"
+            f"[PREPROCESSING DONE] {audio_file.name} - Audio Length: {duration_minutes:.1f} minutes"
         )
 
         # Save preprocessed audio to permanent WAV file in input folder
@@ -149,9 +149,8 @@ def transcribe_single_file(
 
         # Step 2: Transcribe with timestamps
         logger.info(
-            f"[TRANSCRIPTION START] {audio_file.name} - This may take several minutes..."
+            f"[TRANSCRIPTION START] {audio_file.name} - Will take ~{(3*duration_minutes):.1f} minutes"
         )
-        logger.info(f"🔄 Transcribing: {audio_file.name} ({duration_minutes:.1f} min)")
         segments, info = _WORKER_MODEL.transcribe(
             str(wav_file_path),
             beam_size=5,
@@ -164,9 +163,6 @@ def transcribe_single_file(
         segments_list = []
         segment_count = 0
         last_segment_end = 0.0  # Track audio time processed (in seconds)
-        logger.info(
-            f"[TRANSCRIPTION] {audio_file.name} - Processing segments (this will take time)..."
-        )
         for segment in segments:
             segments_list.append(segment)
             segment_count += 1
@@ -207,9 +203,6 @@ def transcribe_single_file(
         )
 
         # Step 3: Format transcription with paragraph-based timestamps (token-efficient)
-        logger.info(
-            f"[FORMATTING] {audio_file.name} - Formatting {total_segments} segments into paragraphs..."
-        )
         transcription = format_transcription_paragraphs(
             segments_list,
             paragraph_gap=3.0,  # Start new paragraph after 3+ seconds of silence
@@ -222,7 +215,7 @@ def transcribe_single_file(
             f"[FORMATTING COMPLETE] {audio_file.name} - Created {paragraph_count} paragraphs from {total_segments} segments"
         )
         logger.info(
-            f"  Token reduction: ~{((total_segments - paragraph_count) / total_segments * 100):.0f}% fewer timestamps"
+            f"Token reduction: ~{((total_segments - paragraph_count) / total_segments * 100):.0f}% fewer timestamps"
         )
 
         # Step 4: Save to txt file
@@ -237,7 +230,7 @@ def transcribe_single_file(
 
         logger.info(f"[SAVE COMPLETE] {txt_filename}")
         logger.info(f"[WORKER COMPLETE] ✓ Successfully transcribed: {audio_file.name}")
-        logger.info(f"  Preprocessed WAV saved as: {wav_filename}")
+        logger.info(f"Preprocessed WAV saved as: {wav_filename}")
         return True, "Successfully transcribed", audio_file, wav_file_path
 
     except Exception as e:
@@ -267,16 +260,15 @@ def process_class_lectures(
     """
     paths = get_class_paths(class_folder)
     class_name = paths["class_name"]
-    logger.debug(f"Processing lectures for class: {class_name}")
 
     audio_files = get_audio_files(class_folder)
 
     if not audio_files:
-        logger.info(f"  No audio files found")
+        logger.info(f"No audio files found")
         logger.debug(f"No audio files in {paths['lecture_input']}")
         return 0, 0
 
-    logger.info(f"  Found {len(audio_files)} audio file(s)")
+    logger.info(f"Found {len(audio_files)} audio file(s)")
     logger.debug(f"Audio files: {[f.name for f in audio_files]}")
 
     # Prepare arguments for parallel processing
@@ -360,13 +352,13 @@ def process_class_lectures(
                                 f"Failed to move audio file: {original_file.name}"
                             )
 
-                        pbar.write(f"    ✓ {original_file.name} ({moved_msg})")
+                        pbar.write(f"✓ {original_file.name} (d{moved_msg})")
                     else:
                         failed += 1
                         logger.error(
                             f"Transcription failed for {original_file.name}: {message}"
                         )
-                        pbar.write(f"    ✗ {original_file.name}: {message}")
+                        pbar.write(f"✗ {original_file.name}: {message}")
 
                 except Exception as e:
                     failed += 1
@@ -374,7 +366,7 @@ def process_class_lectures(
                         f"Unexpected error processing {audio_file.name}: {e}",
                         exc_info=True,
                     )
-                    pbar.write(f"    ✗ {audio_file.name}: Unexpected error: {e}")
+                    pbar.write(f"✗ {audio_file.name}: Unexpected error: {e}")
 
                 pbar.update(1)
 
@@ -397,7 +389,7 @@ def process_all_lectures(classes: List[Path]) -> None:
     cpu_threads = 4  # Safe limit to avoid overheating/crashing
     model_name = "large-v3"  # Most accurate Whisper model
 
-    logger.info(f"\nUsing faster-whisper model: {model_name}")
+    logger.info(f"Using faster-whisper model: {model_name}")
     logger.info(f"Device: {device} (compute_type: {compute_type})")
     logger.info(f"CPU threads: {cpu_threads}")
     logger.info(f"Parallel workers: {config.MAX_AUDIO_WORKERS}")
@@ -409,11 +401,10 @@ def process_all_lectures(classes: List[Path]) -> None:
     for class_folder in classes:
         paths = get_class_paths(class_folder)
         class_name = paths["class_name"]
-        logger.info(f"\n{class_name}:")
-        logger.debug(f"Processing class folder: {class_folder}")
+        logger.info("─" * 70)
+        logger.info(f"{class_name}:")
 
         try:
-            logger.debug(f"Starting lecture processing for {class_name}")
             successful, failed = process_class_lectures(
                 class_folder, model_name, device, compute_type, cpu_threads
             )
@@ -421,19 +412,19 @@ def process_all_lectures(classes: List[Path]) -> None:
             total_failed += failed
 
             if successful > 0:
-                logger.info(f"  ✓ Transcribed {successful} file(s)")
+                logger.info(f"✓ Transcribed {successful} file(s)")
                 logger.debug(
                     f"{class_name}: {successful} files transcribed successfully"
                 )
             if failed > 0:
-                logger.info(f"  ✗ Failed {failed} file(s)")
+                logger.info(f"✗ Failed {failed} file(s)")
                 logger.warning(f"{class_name}: {failed} files failed transcription")
 
         except Exception as e:
-            logger.error(f"  ✗ Error processing class {class_name}: {e}", exc_info=True)
+            logger.error(f"✗ Error processing class {class_name}: {e}", exc_info=True)
             total_failed += 1
 
-    logger.info(f"\n{'─' * 70}")
+    logger.info("─" * 70)
     logger.info(
         f"Transcription Summary: {total_successful} successful, {total_failed} failed"
     )
