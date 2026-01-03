@@ -307,7 +307,7 @@ def process_class_lectures(
         }
 
         # Progress bar for transcription
-        with tqdm(total=len(audio_files), desc="  Transcribing", unit="file") as pbar:
+        with tqdm(total=len(audio_files), desc="Transcribing", unit="file") as pbar:
             for future in as_completed(futures):
                 audio_file = futures[future]
                 try:

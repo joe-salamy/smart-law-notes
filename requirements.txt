@@ -10,5 +10,9 @@ tqdm
 pydub
 ffmpeg-python
 google-generativeai==0.8.3
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
 python-dotenv==1.0.1
 pathlib==1.0.1
+markgdoc==1.1.1

@@ -52,3 +52,11 @@ READING_PROMPT_FILE = "reading.md"
 # ========== OUTPUT DIRECTORY ==========
 
 NEW_OUTPUTS_DIR = Path("C:\\Users\\joesa\\Downloads")
+
+# ========== GOOGLE DRIVE SETTINGS ==========
+
+# Parent folder ID in Google Drive containing class subfolders (for audio downloads)
+DRIVE_PARENT_FOLDER_ID = "1jtZejrszwGvEsOUwcRz4opS6evnK8yjh"
+
+# Classes folder ID in Google Drive (for uploading notes to Google Docs)
+DRIVE_CLASSES_FOLDER_ID = "1SLmIzmmq8bHErx7wMhqaYm9WHwXANVzo"

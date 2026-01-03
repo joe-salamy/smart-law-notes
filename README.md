@@ -7,10 +7,16 @@ Automated system for generating lecture and reading notes from audio files and t
 1. Install Python 3.8+ and FFmpeg
 2. Run: `pip install -r requirements.txt`
 3. Create `.env` with your Gemini API key
-4. Configure class paths in `src/config.py`
-5. Create prompt files in `prompts/`
-6. Place M4A files in `lecture-input/` folders
-7. Run: `cd src && python main.py`
+4. **Set up Google Drive API credentials:**
+   - Copy `credentials.json.example` to `credentials.json`
+   - Replace with your actual OAuth credentials from [Google Cloud Console](https://console.cloud.google.com/)
+   - Enable the Google Drive API for your project
+   - Download OAuth 2.0 credentials and paste into `credentials.json`
+   - **Never commit `credentials.json` or `token.pickle` to git!**
+5. Configure class paths in `src/config.py`
+6. Create prompt files in `prompts/`
+7. Place M4A files in `lecture-input/` folders
+8. Run: `cd src && python main.py`
 
 ### Monitor Progress in Real-Time
 

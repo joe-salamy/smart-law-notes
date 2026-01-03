@@ -10,6 +10,8 @@ from llm_processor import process_all_readings, process_all_lectures
 from folder_manager import verify_and_create_folders
 from file_mover import setup_output_directory
 from audio_processor import process_all_lectures as process_audio
+from drive_downloader import download_from_drive
+from docs_uploader import upload_to_docs
 from logger_config import setup_logging, get_logger
 
 # Initialize logger
@@ -35,6 +37,25 @@ def main():
     except Exception as e:
         logger.error(f"✗ Error setting up output directory: {e}", exc_info=True)
         sys.exit(1)
+
+    # Download files from Google Drive
+    logger.info("=" * 70)
+    logger.info("STEP 0: Downloading Files from Google Drive")
+    logger.info("=" * 70)
+
+    try:
+        logger.debug("Starting Google Drive download")
+        download_results = download_from_drive(CLASSES)
+        total_files = sum(download_results.values())
+        logger.info(f"✓ Downloaded {total_files} file(s) from Google Drive")
+        for class_name, count in download_results.items():
+            logger.debug(f"{class_name}: {count} file(s)")
+    except FileNotFoundError as e:
+        logger.warning(f"⚠ Google Drive download skipped: {e}")
+        logger.info("Continuing with local files...")
+    except Exception as e:
+        logger.error(f"✗ Error downloading from Google Drive: {e}", exc_info=True)
+        logger.info("Continuing with local files...")
 
     # Verify all class folders have correct structure
     logger.info("=" * 70)
@@ -91,6 +112,33 @@ def main():
     except Exception as e:
         logger.error(f"✗ Error processing readings: {e}", exc_info=True)
         sys.exit(1)
+
+    # Upload notes to Google Docs
+    logger.info("=" * 70)
+    logger.info("STEP 5: Uploading Notes to Google Docs")
+    logger.info("=" * 70)
+
+    try:
+        logger.debug("Starting Google Docs upload")
+        upload_results = upload_to_docs(CLASSES)
+
+        total_lectures = sum(r.get("lecture", 0) for r in upload_results.values())
+        total_readings = sum(r.get("reading", 0) for r in upload_results.values())
+        logger.info(
+            f"✓ Uploaded {total_lectures} lecture note(s) and {total_readings} reading note(s)"
+        )
+
+        for class_name, counts in upload_results.items():
+            if "error" in counts:
+                logger.warning(f"{class_name}: Error - {counts['error']}")
+            else:
+                logger.debug(
+                    f"{class_name}: {counts['lecture']} lecture(s), {counts['reading']} reading(s)"
+                )
+        logger.debug("Google Docs upload completed")
+    except Exception as e:
+        logger.error(f"✗ Error uploading to Google Docs: {e}", exc_info=True)
+        logger.info("Note generation completed, but upload to Docs failed.")
 
     # Final summary
     logger.info("=" * 70)
