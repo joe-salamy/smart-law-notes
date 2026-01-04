@@ -5,6 +5,7 @@ Uploads formatted markdown content to Google Docs using markgdoc.
 
 import re
 import pickle
+import subprocess
 from pathlib import Path
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -261,6 +262,10 @@ def _generate_markdown_requests(
     Returns:
         List of Google Docs API requests
     """
+
+    # Apply Prettier formatting to standardize markdown
+    markdown_content = _format_with_prettier(markdown_content)
+
     requests = []
     current_index = start_index
 
@@ -346,6 +351,54 @@ def _generate_markdown_requests(
         i += 1
 
     return requests
+
+
+def _format_with_prettier(markdown_content: str) -> str:
+    """
+    Format markdown content using Prettier CLI.
+
+    Args:
+        markdown_content: The markdown content to format
+
+    Returns:
+        Formatted markdown content, or original content if Prettier fails
+    """
+    # On Windows, npm global commands need .cmd extension
+    import platform
+
+    prettier_cmd = "prettier.cmd" if platform.system() == "Windows" else "prettier"
+
+    try:
+        # Run Prettier with markdown parser via subprocess
+        result = subprocess.run(
+            [prettier_cmd, "--parser", "markdown"],
+            input=markdown_content,
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+
+        if result.returncode == 0:
+            logger.debug("Successfully formatted markdown with Prettier")
+            return result.stdout
+        else:
+            logger.warning(
+                f"Prettier formatting failed (exit code {result.returncode}): {result.stderr}"
+            )
+            return markdown_content
+
+    except FileNotFoundError:
+        logger.warning(
+            "Prettier not found. Install with: npm install -g prettier. "
+            "Continuing with unformatted markdown."
+        )
+        return markdown_content
+    except subprocess.TimeoutExpired:
+        logger.warning("Prettier formatting timed out. Using original markdown.")
+        return markdown_content
+    except Exception as e:
+        logger.warning(f"Error running Prettier: {e}. Using original markdown.")
+        return markdown_content
 
 
 def process_markdown_file(

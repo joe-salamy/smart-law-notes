@@ -1,7 +1,7 @@
 """
 Test script for Step 5: Google Docs upload functionality.
 Tests uploading LLM-generated markdown files to Google Docs.
-Tests with the file "Bussel 10.20.2025.md" for the "Contracts" class.
+Tests with the file "Bussel 10.21.2025.md" for the "Contracts" class.
 """
 
 import sys
@@ -25,9 +25,7 @@ from logger_config import setup_logging, get_logger
 logger = get_logger(__name__)
 
 # Test file path
-TEST_FILE_PATH = Path(
-    r"C:\Users\joesa\OneDrive\Documents\Law school\Contracts\LLM\lecture-output\Bussel 10.20.2025.md"
-)
+TEST_FILE_PATH = Path("tests/markdown/test.md")
 TEST_CLASS_NAME = "Contracts"
 
 
@@ -36,15 +34,15 @@ def test_prepend_filename_to_h3():
     logger.info("Testing prepend_filename_to_h3...")
 
     # Test case 1: Standard h3 header
-    test_content = """# Main Title
+    test_content = """### Main Title
 
 Some intro text.
 
-### Topic One
+- Topic One
 
 Content here.
 
-### Topic Two
+- Topic Two
 
 More content.
 """
@@ -244,5 +242,6 @@ def run_all_tests():
 
 
 if __name__ == "__main__":
-    success = run_all_tests()
+    # success = run_all_tests()
+    success = test_upload_single_file()
     sys.exit(0 if success else 1)

@@ -113,6 +113,7 @@ def main():
         logger.error(f"✗ Error processing readings: {e}", exc_info=True)
         sys.exit(1)
 
+    """
     # Upload notes to Google Docs
     logger.info("=" * 70)
     logger.info("STEP 5: Uploading Notes to Google Docs")
@@ -139,6 +140,7 @@ def main():
     except Exception as e:
         logger.error(f"✗ Error uploading to Google Docs: {e}", exc_info=True)
         logger.info("Note generation completed, but upload to Docs failed.")
+    """
 
     # Final summary
     logger.info("=" * 70)
