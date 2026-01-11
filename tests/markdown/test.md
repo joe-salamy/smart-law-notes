@@ -1,13 +1,4 @@
-# Test header
-
-- Test list item 1
-- Test list item 2
-
-1. Test ordered list
-2. Test ordered list
-
-Test paragraph text
-Test paragraph text
+### Contracts: Promise Enforcement Beyond Bargain - Past Consideration, Moral Obligation, and Statutory Alternatives
 
 **I. The Limits of the Traditional Consideration Doctrine**
 
@@ -89,3 +80,38 @@ Test paragraph text
 - **Statutory Variations:** Some jurisdictions have created statutory rules for enforcing promises based on past benefits.
   - **California:** A **moral obligation** can serve as "good **consideration**," with the remedy being limited.
   - **New York:** A promise based on **past consideration** is enforceable if it is in writing and signed.
+
+### Table Time
+
+**Levels of Code**
+
+| Level                        | Description                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| **1\. Working Directory**    | The actual files you are currently viewing and editing on your computer.                           |
+| **2\. Staging Area (Index)** | A middle ground where you select and prepare specific changes before "saving" them.                |
+| **3\. Local Repository**     | A hidden database on your machine that stores the complete history of your commits.                |
+| **4\. Remote Repository**    | A version of your project hosted on a server (like GitHub or GitLab) for collaboration and backup. |
+
+**Push to main**
+
+| Action                                                             | Command                                     |
+| ------------------------------------------------------------------ | ------------------------------------------- |
+| Compare 1\. Working Directory vs. 2\. Staging Area                 | `git status`                                |
+| Move changes from 1\. Working Directory → 2\. Staging Area         | `git add .`                                 |
+| Move changes from 2\. Staging Area → 3\. Local Repo                | `git commit -m "Describe what you changed"` |
+| Pull from 4\. Remote Repo → 3\. Local Repo & 1\. Working Directory | `git pull origin main`                      |
+| Move changes from 3\. Local Repo → 4\. Remote Repo                 | `git push origin <branch-name>`             |
+
+**Working with Branches**
+
+| Action                                                             | Command                              |
+| ------------------------------------------------------------------ | ------------------------------------ |
+| Create and switch your 1\. Working Directory to a new branch       | `git checkout -b <branch-name>`      |
+| Switch your 1\. Working Directory to an existing branch            | `git checkout <branch-name>`         |
+| List all branches currently stored in your 3\. Local Repo          | `git branch`                         |
+| Link and move new branch from 3\. Local Repo → 4\. Remote Repo     | `git push -u origin <branch-name>`   |
+| Move current branch updates from 3\. Local Repo → 4\. Remote Repo  | `git push`                           |
+| Remove a branch reference from your 3\. Local Repo                 | `git branch -d <branch-name>`        |
+| Combine a branch's history into your current 3\. Local Repo branch | `git merge <branch-name>`            |
+| Create a permanent snapshot label in your 3\. Local Repo           | `git tag -a <tag-name> -m "Message"` |
+| Move labels/tags from 3\. Local Repo → 4\. Remote Repo             | `git push origin --tags`             |

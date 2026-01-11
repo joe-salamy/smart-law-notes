@@ -1,16 +1,16 @@
 """
 Google Docs uploader for LLM-generated markdown notes.
-Uploads formatted markdown content to Google Docs using markgdoc.
+Uploads formatted markdown content to Google Docs using the native API.
 """
 
 import re
 import pickle
-import subprocess
 from pathlib import Path
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+from logger_config import get_logger
+from markdown_parser import parse_markdown_to_requests
 
 from drive_downloader import (
     get_drive_service,
@@ -20,16 +20,11 @@ from drive_downloader import (
     CREDENTIALS_FILE,
 )
 from config import (
-    CLASSES,
     LLM_BASE,
     LECTURE_OUTPUT,
     READING_OUTPUT,
     DRIVE_CLASSES_FOLDER_ID,
 )
-from logger_config import get_logger
-
-# Import markgdoc for markdown to Google Docs conversion
-import markgdoc
 
 logger = get_logger(__name__)
 
@@ -198,13 +193,13 @@ def append_markdown_to_doc(
     docs_service, document_id: str, markdown_content: str, debug: bool = False
 ) -> bool:
     """
-    Append formatted markdown content to the end of a Google Doc using markgdoc.
+    Append formatted markdown content to the end of a Google Doc.
 
     Args:
         docs_service: Google Docs service object
         document_id: ID of the target document
         markdown_content: Markdown content to append
-        debug: Whether to enable debug mode in markgdoc
+        debug: Whether to enable debug mode
 
     Returns:
         True if successful, False otherwise
@@ -225,12 +220,8 @@ def append_markdown_to_doc(
             ).execute()
             end_index += 2  # Account for the added newlines
 
-        # Use markgdoc to convert markdown and get the requests
-        # markgdoc.convert_to_google_docs creates a new doc, so we need to use
-        # the lower-level functions to build requests and apply them to existing doc
-
-        # Parse the markdown and generate requests
-        requests = _generate_markdown_requests(markdown_content, end_index, debug)
+        # Parse the markdown and generate Google Docs API requests
+        requests = parse_markdown_to_requests(markdown_content, end_index, debug)
 
         if requests:
             # Apply the requests to the document
@@ -246,159 +237,6 @@ def append_markdown_to_doc(
     except Exception as e:
         logger.error(f"Error appending markdown to doc: {e}", exc_info=True)
         return False
-
-
-def _generate_markdown_requests(
-    markdown_content: str, start_index: int, debug: bool = False
-) -> list:
-    """
-    Generate Google Docs API requests from markdown content using markgdoc functions.
-
-    Args:
-        markdown_content: The markdown content to convert
-        start_index: The index at which to start inserting content
-        debug: Whether to enable debug mode
-
-    Returns:
-        List of Google Docs API requests
-    """
-
-    # Apply Prettier formatting to standardize markdown
-    markdown_content = _format_with_prettier(markdown_content)
-
-    requests = []
-    current_index = start_index
-
-    lines = markdown_content.split("\n")
-    i = 0
-
-    while i < len(lines):
-        line = lines[i]
-
-        # Skip empty lines but track them for spacing
-        if not line.strip():
-            # Add a newline for empty lines
-            requests.append(
-                {"insertText": {"location": {"index": current_index}, "text": "\n"}}
-            )
-            current_index += 1
-            i += 1
-            continue
-
-        # Check for headers (h1-h6)
-        header_match = re.match(r"^(#{1,6})\s+(.+)$", line)
-        if header_match:
-            level = len(header_match.group(1))
-            text = header_match.group(2)
-            header_requests = markgdoc.get_header_request(
-                text, level, current_index, debug
-            )
-            if isinstance(header_requests, list):
-                requests.extend(header_requests)
-            else:
-                requests.append(header_requests)
-            current_index += len(text) + 1  # +1 for newline
-            i += 1
-            continue
-
-        # Check for unordered list items
-        ul_match = re.match(r"^[\*\-\+]\s+(.+)$", line)
-        if ul_match:
-            text = ul_match.group(1)
-            ul_requests = markgdoc.get_unordered_list_request(
-                text, current_index, debug
-            )
-            if isinstance(ul_requests, list):
-                requests.extend(ul_requests)
-            else:
-                requests.append(ul_requests)
-            current_index += len(text) + 1
-            i += 1
-            continue
-
-        # Check for ordered list items
-        ol_match = re.match(r"^(\d+)\.\s+(.+)$", line)
-        if ol_match:
-            text = ol_match.group(2)
-            ol_requests = markgdoc.get_ordered_list_request(text, current_index, debug)
-            if isinstance(ol_requests, list):
-                requests.extend(ol_requests)
-            else:
-                requests.append(ol_requests)
-            current_index += len(text) + 1
-            i += 1
-            continue
-
-        # Check for horizontal rule
-        if re.match(r"^[\-\*_]{3,}$", line.strip()):
-            hr_requests = markgdoc.get_horizontal_line_request(current_index, debug)
-            if isinstance(hr_requests, list):
-                requests.extend(hr_requests)
-            else:
-                requests.append(hr_requests)
-            current_index += 1
-            i += 1
-            continue
-
-        # Default: treat as paragraph
-        text = line
-        para_requests = markgdoc.get_paragraph_request(text, current_index, debug)
-        if isinstance(para_requests, list):
-            requests.extend(para_requests)
-        else:
-            requests.append(para_requests)
-        current_index += len(text) + 1
-        i += 1
-
-    return requests
-
-
-def _format_with_prettier(markdown_content: str) -> str:
-    """
-    Format markdown content using Prettier CLI.
-
-    Args:
-        markdown_content: The markdown content to format
-
-    Returns:
-        Formatted markdown content, or original content if Prettier fails
-    """
-    # On Windows, npm global commands need .cmd extension
-    import platform
-
-    prettier_cmd = "prettier.cmd" if platform.system() == "Windows" else "prettier"
-
-    try:
-        # Run Prettier with markdown parser via subprocess
-        result = subprocess.run(
-            [prettier_cmd, "--parser", "markdown"],
-            input=markdown_content,
-            text=True,
-            capture_output=True,
-            timeout=10,
-        )
-
-        if result.returncode == 0:
-            logger.debug("Successfully formatted markdown with Prettier")
-            return result.stdout
-        else:
-            logger.warning(
-                f"Prettier formatting failed (exit code {result.returncode}): {result.stderr}"
-            )
-            return markdown_content
-
-    except FileNotFoundError:
-        logger.warning(
-            "Prettier not found. Install with: npm install -g prettier. "
-            "Continuing with unformatted markdown."
-        )
-        return markdown_content
-    except subprocess.TimeoutExpired:
-        logger.warning("Prettier formatting timed out. Using original markdown.")
-        return markdown_content
-    except Exception as e:
-        logger.warning(f"Error running Prettier: {e}. Using original markdown.")
-        return markdown_content
 
 
 def process_markdown_file(

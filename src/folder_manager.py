@@ -51,7 +51,6 @@ def verify_and_create_folders(class_folder: Path) -> None:
     for folder in required_folders:
         try:
             folder.mkdir(parents=True, exist_ok=True)
-            logger.debug(f"Folder verified/created: {folder}")
         except Exception as e:
             logger.error(f"Failed to create folder {folder}: {e}", exc_info=True)
             raise Exception(f"Failed to create folder {folder}: {e}")

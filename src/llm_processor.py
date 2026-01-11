@@ -333,7 +333,6 @@ def process_all_lectures(classes: List[Path], new_outputs_dir: Path) -> None:
         logger.debug(f"Processing class folder: {class_folder}")
 
         try:
-            logger.debug(f"Starting lecture processing for {class_name}")
             successful, failed = process_class_files(
                 class_folder,
                 is_reading=False,
@@ -388,7 +387,6 @@ def process_all_readings(classes: List[Path], new_outputs_dir: Path) -> None:
         logger.debug(f"Processing class folder: {class_folder}")
 
         try:
-            logger.debug(f"Starting reading processing for {class_name}")
             successful, failed = process_class_files(
                 class_folder,
                 is_reading=True,

@@ -25,7 +25,7 @@ from logger_config import setup_logging, get_logger
 logger = get_logger(__name__)
 
 # Test file path
-TEST_FILE_PATH = Path("tests/markdown/test.md")
+TEST_FILE_PATH = Path("tests/markdown/Bussel 10.21.2025.md")
 TEST_CLASS_NAME = "Contracts"
 
 
@@ -180,9 +180,9 @@ def run_all_tests():
     results = {}
 
     # Test 1: prepend_filename_to_h3
-    logger.info("-" * 70)
+    logger.info("─" * 70)
     logger.info("TEST 1: prepend_filename_to_h3")
-    logger.info("-" * 70)
+    logger.info("─" * 70)
     try:
         results["prepend_filename"] = test_prepend_filename_to_h3()
     except Exception as e:
@@ -190,9 +190,9 @@ def run_all_tests():
         results["prepend_filename"] = False
 
     # Test 2: find_notes_document
-    logger.info("-" * 70)
+    logger.info("─" * 70)
     logger.info("TEST 2: find_notes_document")
-    logger.info("-" * 70)
+    logger.info("─" * 70)
     try:
         results["find_document"] = test_find_notes_document()
     except Exception as e:
@@ -201,18 +201,18 @@ def run_all_tests():
 
     # Test 3: Upload single file (only if previous tests passed)
     if results.get("find_document"):
-        logger.info("-" * 70)
+        logger.info("─" * 70)
         logger.info("TEST 3: upload_single_file")
-        logger.info("-" * 70)
+        logger.info("─" * 70)
         try:
             results["upload_file"] = test_upload_single_file()
         except Exception as e:
             logger.error(f"Test failed with exception: {e}")
             results["upload_file"] = False
     else:
-        logger.info("-" * 70)
+        logger.info("─" * 70)
         logger.info("TEST 3: upload_single_file (SKIPPED - no document found)")
-        logger.info("-" * 70)
+        logger.info("─" * 70)
         results["upload_file"] = None
 
     # Summary

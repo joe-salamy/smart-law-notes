@@ -46,6 +46,7 @@
     - The court reasoned these exceptions are valid because an original **legal obligation** (supported by **consideration**) existed at the outset; the new promise merely waives a subsequent legal bar to enforcement. In _Mills_, there was never a pre-existing legal obligation between the father and the innkeeper.
 
 - **_Case Example: Webb v. McGowin_**
+
   - **_Facts:_** The plaintiff (Webb) saved his co-worker (McGowin) from death or serious injury by diverting a falling 75-pound block, severely and permanently injuring himself in the process. In gratitude, McGowin promised to pay Webb $15 every two weeks for the rest of Webb's life. McGowin made these payments for seven years until his death. McGowin's estate then refused to continue the payments.
   - **_Holding:_** The promise was enforceable against McGowin's estate.
   - **_Reasoning:_** The court created an exception to the **past consideration** rule. A promise made in recognition of a **moral obligation** can be sufficient **consideration** where the promisor has received a significant **material benefit**.

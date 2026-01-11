@@ -9,9 +9,9 @@ from pathlib import Path
 
 # List of class folders - add or remove as needed
 CLASSES = [
-    Path("C:\\Users\\joesa\\OneDrive\\Documents\\Law school\\Contracts"),
-    Path("C:\\Users\\joesa\\OneDrive\\Documents\\Law school\\Civ pro"),
-    Path("C:\\Users\\joesa\\OneDrive\\Documents\\Law school\\Torts"),
+    Path("C:\\Users\\joesa\\OneDrive\\Documents\\Law school\\Con Law"),
+    Path("C:\\Users\\joesa\\OneDrive\\Documents\\Law school\\Property"),
+    Path("C:\\Users\\joesa\\OneDrive\\Documents\\Law school\\Quant Methods"),
 ]
 
 # ========== PROCESSING SETTINGS ==========
