@@ -92,18 +92,20 @@ def preprocess_audio(audio_file: Path) -> Tuple[np.ndarray, int]:
     samples = signal.filtfilt(b, a, samples)
     logger.debug("Bandpass filter applied")
 
+    # COMMENTED OUT SINCE ANNOYING TO LISTEN BACK AND TOO QUIET
+
     # Step 4: Normalize audio levels
     # Target: -12dB LUFS (prevents clipping, ensures consistent volume)
-    logger.debug("Normalizing audio levels to -12dB")
-    max_amplitude = np.abs(samples).max()
-    if max_amplitude > 0:
-        target_amplitude = 10 ** (-12 / 20)  # -12dB
-        samples = samples * (target_amplitude / max_amplitude)
-        logger.debug(
-            f"Audio normalized: max amplitude {max_amplitude:.4f} -> {target_amplitude:.4f}"
-        )
-    else:
-        logger.warning(f"Audio file has zero amplitude: {audio_file.name}")
+    # logger.debug("Normalizing audio levels to -12dB")
+    # max_amplitude = np.abs(samples).max()
+    # if max_amplitude > 0:
+    #     target_amplitude = 10 ** (-12 / 20)  # -12dB
+    #     samples = samples * (target_amplitude / max_amplitude)
+    #     logger.debug(
+    #         f"Audio normalized: max amplitude {max_amplitude:.4f} -> {target_amplitude:.4f}"
+    #     )
+    # else:
+    #     logger.warning(f"Audio file has zero amplitude: {audio_file.name}")
 
     logger.debug(f"Audio preprocessing completed for: {audio_file.name}")
     return samples, sample_rate
